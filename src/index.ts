@@ -39,21 +39,36 @@ function run(input: string) {
     throw new Error("Not all combinations have the same length");
   }
 
-  // Compute individual average digit values
+  // Count occurrences for each position
 
-  const averagedDigits: number[] = [];
+  type Occurrences = [
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number,
+    number
+  ];
 
-  for (let i = 0; i < codeLength; ++i) {
-    let sum = 0;
+  const occurrences: [Occurrences, Occurrences, Occurrences, Occurrences] = [
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  ];
 
-    for (let c of sampledCodes) {
-      sum += parseInt(c[i]);
+  for (let code of sampledCodes) {
+    for (let pos = 0; pos < codeLength; ++pos) {
+      const digit = parseInt(code[pos]);
+      ++occurrences[pos][digit];
     }
-
-    averagedDigits.push(sum / sampledCodes.length);
   }
 
-  console.log(`averaged digits = ${averagedDigits.join(" ")}`);
+  console.log("occurrences", occurrences);
 
   // Score possible combinations
 
@@ -62,17 +77,23 @@ function run(input: string) {
   const score = (code: string): ScoredCode => {
     let score = 0;
 
-    for (let i = 0; i < codeLength; ++i) {
-      const digitIndex = code.length - i - 1;
+    for (let pos = 0; pos < codeLength; ++pos) {
+      const digit = parseInt(code[pos]);
 
-      let digit = parseInt(code[digitIndex]);
+      let posScore = 0;
 
-      const digitScore = Math.abs(digit - averagedDigits[digitIndex]);
+      for (let n = 0; n < 10; ++n) {
+        const nOccurrences = occurrences[pos][n];
 
-      score += digitScore;
+        const min = Math.min(digit, n);
+        const max = Math.max(digit, n);
+        const distance = Math.min(max - min, Math.abs(min - (max - 10)));
+
+        posScore += distance * nOccurrences;
+      }
+
+      score += posScore;
     }
-
-    score *= score;
 
     return { code, score };
   };
