@@ -575,23 +575,75 @@ function run(input) {
     const codeLength = sampledCodes[0].length;
     const allSameLength = sampledCodes.every((c)=>c.length == codeLength);
     if (!allSameLength) throw new Error("Not all combinations have the same length");
-    // Compute individual average digit values
-    const averagedDigits = [];
-    for(let i = 0; i < codeLength; ++i){
-        let sum = 0;
-        for (let c of sampledCodes)sum += parseInt(c[i]);
-        averagedDigits.push(sum / sampledCodes.length);
+    const occurrences = [
+        [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+        ],
+        [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+        ],
+        [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+        ],
+        [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+        ]
+    ];
+    for (let code of sampledCodes)for(let pos = 0; pos < codeLength; ++pos){
+        const digit = parseInt(code[pos]);
+        ++occurrences[pos][digit];
     }
-    console.log(`averaged digits = ${averagedDigits.join(" ")}`);
+    console.log("occurrences", occurrences);
     const score = (code)=>{
         let score = 0;
-        for(let i = 0; i < codeLength; ++i){
-            const digitIndex = code.length - i - 1;
-            let digit = parseInt(code[digitIndex]);
-            const digitScore = Math.abs(digit - averagedDigits[digitIndex]);
-            score += digitScore;
+        for(let pos = 0; pos < codeLength; ++pos){
+            const digit = parseInt(code[pos]);
+            let posScore = 0;
+            for(let n = 0; n < 10; ++n){
+                const nOccurrences = occurrences[pos][n];
+                const min = Math.min(digit, n);
+                const max = Math.max(digit, n);
+                const distance = Math.min(max - min, Math.abs(min - (max - 10)));
+                posScore += distance * nOccurrences;
+            }
+            score += posScore;
         }
-        score *= score;
         return {
             code,
             score
